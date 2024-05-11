@@ -22,8 +22,8 @@ def extract_frames(video_path, output_dir, frame_rate=1.0):
 
 def result_from_image(image_path):
     result = {
-        "anger": 10.0,
         "contempt": 60.0,
+        "anger": 10.0,
         "fear": 20.0,
         "happiness": 40.0,
         "neutral": 50.0,
