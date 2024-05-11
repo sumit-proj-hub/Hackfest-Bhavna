@@ -14,7 +14,7 @@ app.config['MAX_CONTENT_LENGTH'] = 512 * 1024 * 1024
 
 def extract_frames(video_path, output_dir, frame_rate=1.0):
     completed_process = subprocess.run(
-        f'ffmpeg -i ""{video_path}"" -r {frame_rate} ""{output_dir}/%d.jpg"',
+        ["ffmpeg", "-i", video_path, "-r", str(frame_rate), f"{output_dir}/%d.jpg"],
         capture_output=True)
     if completed_process.returncode != 0:
         raise ValueError(f"{video_path} is not a video file")
@@ -44,7 +44,11 @@ def result_from_image(image_path):
 def result_from_video(video_path):
     temp_dir = f"temp.{int(time.time() * 1000)}"
     os.mkdir(temp_dir)
-    extract_frames(video_path, temp_dir, 0.2)
+    try:
+        extract_frames(video_path, temp_dir, 2)
+    except ValueError:
+        os.rmdir(temp_dir)
+        raise
     temp_path = Path(temp_dir)
     frames = list(temp_path.iterdir())
     output = bytearray(b'\0' * len(frames) * 32)
@@ -53,7 +57,7 @@ def result_from_video(video_path):
         output[offset:offset + 32] = result_from_image(frame.absolute())
         offset += 32
         frame.unlink()
-    temp_path.unlink()
+    temp_path.rmdir()
     return output
 
 
@@ -71,11 +75,13 @@ def upload():
     try:
         output = result_from_image(file_path) if file_type == "Image" else result_from_video(
             file_path)
+        os.unlink(file_path)
         bio = BytesIO(output)
         response = make_response(bio.read())
         response.headers.set('Content-Type', 'application/octet-stream')
         return response
     except ValueError:
+        os.unlink(file_path)
         return "File not supported", 403
 
 
