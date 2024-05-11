@@ -70,14 +70,14 @@ class ResultScreenViewModel(private val dirName: String) : ViewModel() {
     }
 
     private fun getEmotionValues(floatArray: FloatArray): Map<String, Float> = mapOf(
-        "Happiness" to floatArray[0],
-        "Anger" to floatArray[1],
-        "Sadness" to floatArray[2],
-        "Surprise" to floatArray[3],
-        "Contempt" to floatArray[4],
-        "Disgust" to floatArray[5],
-        "Neutral" to floatArray[6],
-        "Fear" to floatArray[7],
+        "Anger" to floatArray[0],
+        "Contempt" to floatArray[1],
+        "Disgust" to floatArray[2],
+        "Fear" to floatArray[3],
+        "Happiness" to floatArray[4],
+        "Neutral" to floatArray[5],
+        "Sadness" to floatArray[6],
+        "Surprise" to floatArray[7],
     )
 
     private fun getOrderedEmotionValues(frameNumber: Int): FloatArray {
