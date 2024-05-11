@@ -31,7 +31,7 @@ class CustomClassifier(nn.Module):
 
 
 # Load the saved model
-model_path = "model_f1_postdatamanipulation_3.pth"
+model_path = "model_f1_happyreturns.pth"
 loaded_model = torch.load(model_path, map_location=device)
 
 # Define transformations for preprocessing the input image
