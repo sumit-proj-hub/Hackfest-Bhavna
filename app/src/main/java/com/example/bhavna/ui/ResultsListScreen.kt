@@ -405,7 +405,7 @@ fun ResultEntry(
         modifier = modifier
             .padding(8.dp)
             .indication(interactionSource, rememberRipple())
-            .pointerInput(listOf(result.isSelected, selectionModeActive)) {
+            .pointerInput(listOf(result.isSelected, selectionModeActive, result.uploadStatus)) {
                 detectTapGestures(
                     onTap = {
                         if (selectionModeActive) {

@@ -137,7 +137,7 @@ fun PortraitResultScreen(
             }
             Spacer(modifier = Modifier.height(12.dp))
             HorizontalBarChart(
-                data = uiState.emotionValues,
+                data = viewModel.getEmotionValues(uiState.videoPosition),
                 modifier = Modifier.fillMaxWidth()
             )
         }
@@ -182,7 +182,7 @@ fun LandscapeResultScreen(
             }
             Spacer(modifier = Modifier.height(12.dp))
             HorizontalBarChart(
-                data = uiState.emotionValues,
+                data = viewModel.getEmotionValues(uiState.videoPosition),
                 modifier = Modifier
                     .fillMaxWidth()
                     .weight(0.4f)
