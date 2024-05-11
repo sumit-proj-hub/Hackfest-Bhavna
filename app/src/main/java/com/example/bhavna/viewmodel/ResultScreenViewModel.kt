@@ -33,7 +33,7 @@ class ResultScreenViewModel(private val dirName: String) : ViewModel() {
     lateinit var mediaType: MediaType private set
     lateinit var mediaFile: File private set
     private lateinit var dataByteArray: ByteArray
-    private var poll = false
+    private var poll = true
 
     fun initialize(context: Context) {
         val resultDir = File(context.filesDir, dirName)
@@ -51,7 +51,7 @@ class ResultScreenViewModel(private val dirName: String) : ViewModel() {
                 override fun run() {
                     _uiState.value = _uiState.value.copy(videoPosition = player.currentPosition)
                     if (poll)
-                        handler.postDelayed(this, 200)
+                        handler.postDelayed(this, 50)
                 }
             }
             handler.post(runnable)
@@ -80,21 +80,26 @@ class ResultScreenViewModel(private val dirName: String) : ViewModel() {
         "Fear" to floatArray[7],
     )
 
-    fun getEmotionValues(time: Long): Map<String, Float> {
-        val byteOffset = ((time / delayBetweenFrames) * 32).toInt()
-        val floatArray = if (byteOffset + 32 > dataByteArray.size) {
+    private fun getOrderedEmotionValues(frameNumber: Int): FloatArray {
+        val byteOffset = (frameNumber * 32)
+        return if (byteOffset + 32 > dataByteArray.size) {
             getFloatsFromByteArray(
-                dataByteArray.sliceArray(
-                    IntRange(
-                        dataByteArray.size - 32,
-                        dataByteArray.size - 1
-                    )
-                )
+                dataByteArray.sliceArray(IntRange(dataByteArray.size - 32, dataByteArray.size - 1))
             )
         } else
             getFloatsFromByteArray(dataByteArray.sliceArray(IntRange(byteOffset, byteOffset + 31)))
+    }
 
-        return getEmotionValues(floatArray)
+    fun getEmotionValues(time: Long): Map<String, Float> {
+        val frameNumber = (time / delayBetweenFrames).toInt()
+        val currFrameEmotion = getOrderedEmotionValues(frameNumber)
+        val nextFrameEmotion = getOrderedEmotionValues(frameNumber + 1)
+        val interpolatedEmotion = currFrameEmotion.mapIndexed { index, fl ->
+            fl + (nextFrameEmotion[index] - currFrameEmotion[index]) *
+                    (time % delayBetweenFrames) / delayBetweenFrames
+        }
+
+        return getEmotionValues(interpolatedEmotion.toFloatArray())
     }
 
     override fun onCleared() {

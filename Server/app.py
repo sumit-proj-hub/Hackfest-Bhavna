@@ -5,11 +5,41 @@ import time
 from io import BytesIO
 from pathlib import Path
 
+import torch
+import torch.nn as nn
+import torch.nn.functional as F
+from PIL import Image
 from flask import Flask, request, make_response
+from torchvision import transforms
 
 app = Flask(__name__)
 app.config['UPLOAD_FOLDER'] = './uploads'
 app.config['MAX_CONTENT_LENGTH'] = 512 * 1024 * 1024
+
+device = torch.device("cpu")
+
+
+class CustomClassifier(nn.Module):
+    def __init__(self, input_size, num_classes):
+        super(CustomClassifier, self).__init__()
+        self.fc = nn.Linear(input_size, num_classes)
+
+    def forward(self, x):
+        x = self.fc(x)
+        x = F.softmax(x, dim=1)
+        return x
+
+
+# Load the saved model
+model_path = "model_f1.pth"
+loaded_model = torch.load(model_path, map_location=device)
+
+# Define transformations for preprocessing the input image
+transform = transforms.Compose([
+    transforms.Resize((224, 224)),  # Resize the image
+    transforms.ToTensor(),  # Convert to tensor
+    transforms.Normalize(0.5, 0.5)  # Normalize the pixel values
+])
 
 
 def extract_frames(video_path, output_dir, frame_rate=1.0):
@@ -21,20 +51,16 @@ def extract_frames(video_path, output_dir, frame_rate=1.0):
 
 
 def result_from_image(image_path):
-    result = {
-        "contempt": 60.0,
-        "anger": 10.0,
-        "fear": 20.0,
-        "happiness": 40.0,
-        "neutral": 50.0,
-        "sadness": 10.0,
-        "surprise": 10.0,
-        "disgust": 1.0
-    }
-
+    input_image = Image.open(image_path).convert('RGB')
+    input_tensor = transform(input_image).unsqueeze(0)  # Add batch dimension
+    input_tensor = input_tensor.to(device)
+    with torch.no_grad():
+        result = loaded_model(input_tensor)
+    result = (result * 100).tolist()[0]
+    print(result)
     output = bytearray(b'\0' * 32)
     offset = 0
-    for value in result.values():
+    for value in result:
         bits = struct.pack("!f", value)
         output[offset:offset + 4] = list(bits)
         offset += 4
@@ -63,6 +89,8 @@ def result_from_video(video_path):
 
 @app.route('/upload', methods=['POST'])
 def upload():
+    if not request.form.__contains__("fileType"):
+        return "File Type not found", 400
     file_type = request.form["fileType"]
     if file_type not in ('Image', 'Video'):
         return "Unsupported File Type", 400
@@ -78,6 +106,7 @@ def upload():
         os.unlink(file_path)
         bio = BytesIO(output)
         response = make_response(bio.read())
+        response.headers.set('Access-Control-Allow-Origin', '*')
         response.headers.set('Content-Type', 'application/octet-stream')
         return response
     except ValueError:
