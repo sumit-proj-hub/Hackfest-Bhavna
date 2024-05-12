@@ -31,7 +31,7 @@ class CustomClassifier(nn.Module):
 
 
 # Load the saved model
-model_path = "model_f1_happyreturns.pth"
+model_path = "model_f1_letsee.pth"
 loaded_model = torch.load(model_path, map_location=device)
 
 # Define transformations for preprocessing the input image
@@ -51,7 +51,7 @@ def extract_frames(video_path, output_dir, frame_rate=1.0):
 
 
 def result_from_image(image_path):
-    input_image = Image.open(image_path).convert('RGB')
+    input_image = Image.open(image_path).convert('L').convert('RGB')
     input_tensor = transform(input_image).unsqueeze(0)  # Add batch dimension
     input_tensor = input_tensor.to(device)
     with torch.no_grad():
@@ -71,7 +71,7 @@ def result_from_video(video_path):
     temp_dir = f"temp.{int(time.time() * 1000)}"
     os.mkdir(temp_dir)
     try:
-        extract_frames(video_path, temp_dir, 2)
+        extract_frames(video_path, temp_dir, 10)
     except ValueError:
         os.rmdir(temp_dir)
         raise
@@ -109,8 +109,9 @@ def upload():
         response.headers.set('Access-Control-Allow-Origin', '*')
         response.headers.set('Content-Type', 'application/octet-stream')
         return response
-    except ValueError:
+    except ValueError as e:
         os.unlink(file_path)
+        print(e)
         return "File not supported", 403
 
 

@@ -72,6 +72,7 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.bumptech.glide.integration.compose.ExperimentalGlideComposeApi
 import com.bumptech.glide.integration.compose.GlideImage
+import com.example.bhavna.ui.theme.TelegrafFont
 import com.example.bhavna.ui.theme.darkGreen
 import com.example.bhavna.ui.theme.orangeColor
 import com.example.bhavna.viewmodel.MediaType
@@ -95,7 +96,8 @@ private fun ResultsListAppBar(
             Text(
                 text = "Bhavna",
                 fontWeight = FontWeight.Bold,
-                style = MaterialTheme.typography.titleLarge
+                fontFamily = TelegrafFont,
+                style = MaterialTheme.typography.headlineMedium
             )
         },
         actions = {
