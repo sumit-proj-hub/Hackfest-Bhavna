@@ -16,7 +16,7 @@ import java.io.File
 import java.nio.ByteBuffer
 import java.nio.ByteOrder
 
-const val delayBetweenFrames = 100
+const val delayBetweenFrames = 250
 
 @Suppress("UNCHECKED_CAST")
 class ResultScreenViewModelFactory(private val dirName: String) :

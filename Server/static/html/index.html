@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>hackfest</title>
+  <link rel="stylesheet" href="../css/style.css">
+  <link
+    href="https://fonts.googleapis.com/css2?family=Baloo+Bhaijaan+2&family=Baloo+Bhaina+2&family=Bree+Serif&family=Hedvig+Letters+Serif:opsz@12..24&family=Kalnia:wght@200;300&family=Ubuntu:wght@300&display=swap"
+    rel="stylesheet">
+
+</head>
+
+<body>
+  <nav id="navbar">
+    <div id="logo">
+      <img src="../image/Logo.png" alt="Bhavna">
+    </div>
+    <ul>
+  
+      <h1 class="webhead">BHAVNA.ai</h1>
+    </ul>
+  </nav>
+
+  <section id="Home">
+    <h1 class="heading" id="head">Welcome </h1>
+    <h1 class="heading">To BHAVNA.ai</h1>
+    <h3 class="heading1">Upload images and video to </h3>.</h2>
+      <h3 class="heading1">get realtime emotion data.</h2>
+  </section>
+
+  <form action="" id="myform">
+    <div id="box">
+      <ul>
+        <div id="videobox">
+
+          <li> <input type="file" id="inpfile" accept="video/*,image/*" width="100px" height="50px">
+            <button type="submit" id="button">Upload</button>
+            <div id="mediaDisplay"></div>
+            <div id="message"></div>
+        </div>
+        </li>
+        <li>
+          <div class="card" id="card1">
+            <canvas id="myChart"></canvas>
+          </div>
+        </li>
+        <li>
+        </li>
+      </ul>
+    </div>
+    <div class="card" id="card2">
+      <canvas id="myChart1"></canvas>
+    </div>
+  </form>
+  <section id="main">
+    <h3 id="h3id">
+      About:
+    </h3>
+    <p id="text">It is a platform that takes images and videos as inputs and dynamically returns the emotions shown in the images using facial emotion recognition model. The app provide a graphical index of 8 emotions (anger, contempt, disgust, fear, happiness, neutral, sadness and surprise). The model provides probabilities of an individual having said emotions.</p>
+  </section>
+
+</body>
+
+
+<!----------------------------------------------------------------------- CHART SCRIPT -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<script>
+  const ctx = document.getElementById('myChart');
+  const emotionValues = [0, 0, 0, 0, 0, 0, 0, 0];
+
+  let chart1 = new Chart(ctx, {
+    type: 'bar',
+    data: {
+      labels: ['Anger', 'Contempt', 'Disgust', 'Fear', 'Happiness', 'Neutrality', 'Sadness', 'suprise'],
+      datasets: [{
+        label: 'Emotions values',
+        data: emotionValues,
+        borderWidth: 2
+      }]
+    },
+    options: {
+      scales: {
+        y: {
+          beginAtZero: true,
+
+        },
+        x: {
+          suggestedMax: 100,
+        }
+      },
+
+      indexAxis: 'y',
+    },
+
+  });
+
+
+  //------------------------------------------------
+
+  const ctx1 = document.getElementById('myChart1');
+
+  let chart2 = new Chart(ctx1, {
+    type: 'bar',
+    data: {
+      labels: ['Anger', 'Contempt', 'Disgust', 'Fear', 'Happiness', 'Neutrality', 'Sadness', 'suprise'],
+      datasets: [{
+        label: 'Emotions values',
+        data: emotionValues,
+        backgroundcolor:'rgb(255,0,0)',
+        borderWidth: 12
+      }]
+    },
+    options: {
+      scales: {
+        y: {
+          beginAtZero: true,
+        },
+        x: {
+          suggestedMax: 100,
+        }
+      },
+
+      indexAxis: 'y',
+    },
+
+  });
+
+//=========================================================
+
+  let mediaType = "";
+  let videoNode = null;
+  (function localFilePlayer() {
+    'use strict';
+    let URL = window.URL || window.webkitURL;
+
+    let displayMessage = function (message, isError) {
+      let element = document.querySelector('#message');
+      element.innerHTML = message;
+      element.className = isError ? 'error' : 'info';
+    };
+
+    let displayMedia = function (event) {
+      let file = this.files[0];
+      let type = file.type;
+      let mediaDisplay = document.getElementById('mediaDisplay');
+
+      if (type.startsWith('video/')) {
+        videoNode = document.createElement('video');
+        videoNode.controls = true;
+        let fileURL = URL.createObjectURL(file);
+        videoNode.src = fileURL;
+        mediaDisplay.innerHTML = ''; 
+        mediaDisplay.appendChild(videoNode);
+        mediaType = "Video";
+      } else if (type.startsWith('image/')) {
+        let imageNode = document.createElement('img');
+
+        let fileURL = URL.createObjectURL(file);
+        imageNode.src = fileURL;
+        mediaDisplay.innerHTML = ''; 
+        mediaDisplay.appendChild(imageNode);
+        mediaType = "Image";
+      } else {
+        displayMessage('Selected file is not supported.', true);
+        mediaType = ""
+      }
+    };
+
+    let fileInput = document.getElementById('inpfile');
+    fileInput.addEventListener('change', displayMedia, false);
+  })();
+
+
+  // ------------------------------------------------------------
+
+  const form = document.getElementById("myform");
+  const inpfile = document.getElementById("inpfile");
+  let refreshIntervalId = undefined
+  let outputFloatArray = new Float32Array()
+
+  function showEmotionValues(frameIndex = 0) {
+    for (let i = 0; i < 8; ++i) {
+      emotionValues[i] = outputFloatArray[frameIndex * 8 + i];
+    }
+    chart1.update()
+    chart2.update()
+  }
+
+  form.addEventListener('submit', (e) => {
+    e.preventDefault();
+    const endpoint = "http://192.168.203.26:5000/upload";
+    const formdata = new FormData();
+
+    console.log(inpfile.files);
+
+    formdata.append("file", inpfile.files[0]);
+    formdata.append("fileType", mediaType);
+
+    fetch(endpoint, {
+      method: "post",
+      body: formdata
+    }).then((response) => response.blob())
+      .then((blob) => blob.arrayBuffer())
+      .then(arrayBuffer => {
+        if (refreshIntervalId) {
+          clearInterval(refreshIntervalId);
+          refreshIntervalId = undefined
+        }
+        outputFloatArray = new Float32Array(arrayBuffer.byteLength / 4)
+        const dataView = new DataView(arrayBuffer)
+        for (let i = 0; i < outputFloatArray.length; ++i)
+          outputFloatArray[i] = dataView.getFloat32(4 * i, false)
+        if (mediaType == "Image") {
+          showEmotionValues() 
+        } else {
+          refreshIntervalId = setInterval(() => {
+            const frameNumber = Math.floor(videoNode.currentTime / 0.25);
+            showEmotionValues(frameNumber)
+          }, 50)
+        }
+      }).catch(console.error);
+  })
+</script>
+
+</html>

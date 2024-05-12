@@ -71,7 +71,7 @@ def result_from_video(video_path):
     temp_dir = f"temp.{int(time.time() * 1000)}"
     os.mkdir(temp_dir)
     try:
-        extract_frames(video_path, temp_dir, 10)
+        extract_frames(video_path, temp_dir, 4)
     except ValueError:
         os.rmdir(temp_dir)
         raise

@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SignUp</title>
+    <link rel="stylesheet" href="signUp.css">
+    <link
+        href="https://fonts.googleapis.com/css2?family=Baloo+Bhaijaan+2&family=Baloo+Bhaina+2&family=Bree+Serif&family=Hedvig+Letters+Serif:opsz@12..24&family=Kalnia:wght@200;300&family=Ubuntu:wght@300&display=swap"
+        rel="stylesheet">
+</head>
+
+<body>
+    <form action="" class="signup">
+        <div class="head">
+            <img src="/image/navlogo.png" alt="">
+            <h1>CP community</h1>
+        </div>
+        <div class="style">
+            <h3>Email</h3>
+            <input type="text" id="email" placeholder="Enter your Email">
+        </div>
+        <div class="style pass">
+            <h3>Password</h3>
+            <input type="password" id="password" placeholder="Enter your Password">
+        </div>
+        <div class="style">
+            <h3>College </h2>
+                <input type="text" id="College" placeholder="Enter your College name">
+        </div>
+        <button id="btn">SignUp</button>
+        <div class="link">
+            <p>Already have a Account?<a href="signinredirect.html">SignIn</a></p>
+        </div>
+    </form>
+
+
+    <script type="module">
+        // Import the functions you need from the SDKs you need
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.11.1/firebase-app.js";
+        import { getAnalytics } from "https://www.gstatic.com/firebasejs/10.11.1/firebase-analytics.js";
+        // TODO: Add SDKs for Firebase products that you want to use
+        // https://firebase.google.com/docs/web/setup#available-libraries
+      
+        // Your web app's Firebase configuration
+        // For Firebase JS SDK v7.20.0 and later, measurementId is optional
+        const firebaseConfig = {
+          apiKey: "AIzaSyD7mvvwr2ABrMJA3ULGX-LGHtYVWqb61Gs",
+          authDomain: "hackfest-1e95b.firebaseapp.com",
+          projectId: "hackfest-1e95b",
+          storageBucket: "hackfest-1e95b.appspot.com",
+          messagingSenderId: "406903224365",
+          appId: "1:406903224365:web:e90c72b59c8a75a9e760a4",
+          measurementId: "G-CH7NVN839Q"
+        };
+      
+        // Initialize Firebase
+        const app = initializeApp(firebaseConfig);
+        const analytics = getAnalytics(app);
+
+    
+        const auth = getAuth(app)
+
+        const signupForm = document.querySelector('.signup')
+        signupForm.addEventListener('submit', (e) => {
+            e.preventDefault()
+
+            const email = signupForm.email.value
+            const password = signupForm.password.value
+            const College = signupForm.College.value
+
+
+            createUserWithEmailAndPassword(auth, email, password, College)
+                .then((cred) => {
+                    console.log('user created:', cred.user)
+                    signupForm.reset()
+                    // window.location.href = '../html/index2.html';
+                })
+
+                .catch((err) => {
+                    console.log(err.message)
+
+                })
+
+        })
+    </script>
